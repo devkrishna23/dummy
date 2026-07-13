@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Krishna Vijayvargiya — Applied AI Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08090D;
+  --ink:#EDEFF4;
+  --ink-mid:#A7AFC0;
+  --ink-dim:#5E6779;
+  --line:#181C26;
+  --saffron:#EE8A3B;
+  --blue:#5B8DEF;
+  --green:#37B981;
+  --grotesk:'Archivo',system-ui,sans-serif;
+  --serif:'Instrument Serif',Georgia,serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:auto}
+body{background:var(--bg);color:var(--ink);font-family:var(--grotesk);line-height:1.6;overflow-x:hidden;font-weight:500}
+::selection{background:var(--saffron);color:#08090D}
+body.has-cursor,body.has-cursor a{cursor:none}
+.wrap{max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,48px)}
+
+/* ================= PRELOADER ================= */
+#pre{position:fixed;inset:0;z-index:100;background:var(--bg);transition:transform 1s cubic-bezier(.83,0,.17,1)}
+#pre.done{transform:translateY(-101%)}
+#pre .inner{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:clamp(24px,4vw,52px)}
+#pre .top{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--ink-dim);display:flex;justify-content:space-between;text-transform:uppercase}
+#pre .name{font-weight:800;font-size:clamp(30px,5.4vw,64px);letter-spacing:-.02em;text-transform:uppercase;line-height:1.02}
+#pre .name em{font-family:var(--serif);font-style:italic;font-weight:400;text-transform:none;color:var(--saffron);letter-spacing:0}
+#pre .bottom{display:flex;justify-content:space-between;align-items:flex-end}
+#pre .count{font-weight:800;font-size:clamp(56px,10vw,128px);letter-spacing:-.04em;line-height:.9}
+#pre .bar{position:absolute;left:0;bottom:0;height:2px;width:0%;background:var(--saffron)}
+
+/* ================= CURSOR ================= */
+#cDot,#cRing{position:fixed;top:0;left:0;pointer-events:none;z-index:99;border-radius:50%;transform:translate(-50%,-50%)}
+#cDot{width:5px;height:5px;background:var(--ink)}
+#cRing{width:30px;height:30px;border:1px solid rgba(237,239,244,.35);transition:width .3s,height .3s,border-color .3s}
+#cRing.hover{width:54px;height:54px;border-color:var(--saffron)}
+@media(pointer:coarse){#cDot,#cRing{display:none}}
+
+/* ================= STAGE ================= */
+#stage{position:fixed;inset:0;z-index:0}
+#stage canvas{width:100%;height:100%;display:block}
+.veil{position:fixed;inset:0;z-index:0;pointer-events:none;background:
+ radial-gradient(1400px 760px at 50% 44%,transparent 0%,rgba(8,9,13,.3) 60%,rgba(8,9,13,.86) 100%)}
+
+/* ================= RAIL ================= */
+#rail{position:fixed;right:clamp(16px,3vw,42px);top:50%;transform:translateY(-50%);z-index:5;display:flex;flex-direction:column;gap:16px}
+#rail a{display:block;width:5px;height:5px;border-radius:50%;background:var(--ink-dim);transition:background .3s,transform .3s}
+#rail a.on{background:var(--saffron);transform:scale(1.7)}
+@media(max-width:860px){#rail{display:none}}
+
+/* ================= TYPE ================= */
+.content{position:relative;z-index:1}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-dim);display:flex;align-items:center;gap:12px}
+.kicker::before{content:"";width:26px;height:1px;background:var(--saffron);display:inline-block}
+h1,h2{font-weight:800;text-transform:uppercase;letter-spacing:-.025em;line-height:.96}
+h1 em,h2 em,p em{font-family:var(--serif);font-style:italic;font-weight:400;text-transform:none;letter-spacing:0;color:var(--saffron)}
+.split .w{display:inline-block;overflow:hidden;vertical-align:bottom;padding-bottom:.08em;margin-bottom:-.08em}
+.split .w span{display:inline-block;transform:translateY(115%);transition:transform .9s cubic-bezier(.19,1,.22,1)}
+.split.in .w span{transform:none}
+.fade{opacity:0;transform:translateY(20px);transition:opacity .9s ease,transform .9s cubic-bezier(.19,1,.22,1)}
+.fade.in{opacity:1;transform:none}
+
+/* ================= HERO ================= */
+#hero{min-height:100vh;display:flex;align-items:flex-end;padding:0 0 9vh}
+#hero h1{font-size:clamp(46px,9.6vw,140px);margin:22px 0 26px}
+#hero .lede{color:var(--ink-mid);font-size:clamp(15px,1.5vw,18px);max-width:52ch}
+.hero-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-top:44px;border-top:1px solid var(--line);padding-top:20px}
+.hero-foot .meta{display:flex;gap:30px;font-family:var(--mono);font-size:11.5px;color:var(--ink-dim);flex-wrap:wrap;text-transform:uppercase;letter-spacing:.08em}
+.hero-foot .meta b{color:var(--ink);font-weight:500}
+.hero-foot .cue{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;color:var(--ink-dim)}
+
+/* ================= STATEMENT ================= */
+#statement{padding:30vh 0}
+#statement p.big{font-weight:700;font-size:clamp(24px,3.8vw,46px);line-height:1.22;letter-spacing:-.015em;max-width:22ch}
+#statement .sub{margin-top:26px;font-family:var(--mono);font-size:12px;color:var(--ink-dim);max-width:60ch;line-height:1.9;font-weight:400}
+
+/* ================= CHAPTERS ================= */
+.chapter{min-height:135vh;display:flex;align-items:center;padding:10vh 0}
+.ch{max-width:640px}
+.ch h2{font-size:clamp(32px,5vw,64px);margin:18px 0 20px}
+.ch p{color:var(--ink-mid);font-size:15.5px;max-width:50ch;margin-bottom:12px}
+.ch p.note{font-size:13.5px;color:var(--ink-dim)}
+.ch .fact{font-family:var(--mono);font-size:11.5px;color:var(--ink-dim);letter-spacing:.04em;display:flex;gap:18px;flex-wrap:wrap;margin-top:18px}
+.ch .fact b{color:var(--ink);font-weight:500}
+.ch .st{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--line);border-radius:4px;padding:4px 9px;color:var(--ink-dim);display:inline-block;margin-top:16px}
+.ch .st.working{color:var(--green);border-color:rgba(55,185,129,.35)}
+.ch .st.packaged{color:var(--blue);border-color:rgba(91,141,239,.35)}
+.right{margin-left:auto}
+
+/* ================= INDEX + CAPS ================= */
+#index{padding:16vh 0 10vh}
+.index-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:40px;gap:20px;flex-wrap:wrap}
+.index-head h2{font-size:clamp(32px,5vw,64px)}
+.legend{font-family:var(--mono);font-size:10.5px;color:var(--ink-dim);letter-spacing:.06em;text-align:right;line-height:2}
+.legend i{font-style:normal}
+.legend .w{color:var(--green)}.legend .p{color:var(--blue)}
+.row{display:grid;grid-template-columns:56px 1fr auto auto;gap:20px;align-items:baseline;border-top:1px solid var(--line);padding:20px 6px;transition:background .35s,padding-left .35s;position:relative;text-decoration:none;color:inherit}
+.row:last-of-type{border-bottom:1px solid var(--line)}
+.row:hover{background:linear-gradient(90deg,rgba(238,138,59,.05),transparent 60%);padding-left:16px}
+.row .no{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
+.row .ti{font-weight:700;font-size:clamp(17px,2.2vw,25px);letter-spacing:-.015em;text-transform:uppercase;line-height:1.1}
+.row .cat{font-family:var(--mono);font-size:11px;color:var(--ink-dim);letter-spacing:.06em;text-transform:uppercase;text-align:right}
+.row .st{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--line);border-radius:4px;padding:4px 9px;color:var(--ink-dim)}
+.row .st.working{color:var(--green);border-color:rgba(55,185,129,.35)}
+.row .st.packaged{color:var(--blue);border-color:rgba(91,141,239,.35)}
+@media(max-width:760px){.row{grid-template-columns:40px 1fr;row-gap:8px}.row .cat{display:none}.row .st{justify-self:start}}
+.caps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:36px 28px;margin-top:10vh;border-top:1px solid var(--line);padding-top:44px}
+.caps h3{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--saffron);margin-bottom:14px;font-weight:500}
+.caps ul{list-style:none}
+.caps li{font-size:13.5px;color:var(--ink-mid);padding:5px 0;border-bottom:1px dashed rgba(24,28,38,.9)}
+
+/* ================= CONTACT ================= */
+#contact{min-height:110vh;display:flex;align-items:center;text-align:center}
+#contact .ch{max-width:860px;margin:0 auto;display:flex;flex-direction:column;align-items:center}
+#contact h2{font-size:clamp(40px,7.4vw,96px)}
+.magnet{display:inline-block;margin-top:38px;font-family:var(--mono);font-size:clamp(14px,1.9vw,19px);letter-spacing:.04em;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:clamp(16px,2.4vw,24px) clamp(28px,4.4vw,52px);transition:border-color .35s,color .35s,background .35s;will-change:transform;background:rgba(8,9,13,.5);backdrop-filter:blur(5px)}
+.magnet:hover{border-color:var(--saffron);color:var(--saffron);background:rgba(238,138,59,.05)}
+.clinks{display:flex;gap:26px;margin-top:28px;font-family:var(--mono);font-size:12px}
+.clinks a{color:var(--ink-dim);text-decoration:none;letter-spacing:.08em;text-transform:uppercase;transition:color .3s}
+.clinks a:hover{color:var(--saffron)}
+
+footer{border-top:1px solid var(--line);padding:26px 0 34px;font-family:var(--mono);font-size:11px;color:var(--ink-dim);letter-spacing:.04em}
+footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+/* ================= SOTY LAYER ================= */
+#progressBar{position:fixed;top:0;left:0;right:0;height:2px;z-index:98;background:var(--saffron);transform-origin:0 50%;transform:scaleX(0)}
+#hdr{position:fixed;top:0;left:0;right:0;z-index:97;display:flex;justify-content:space-between;align-items:center;padding:16px clamp(20px,4vw,48px);font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim);background:linear-gradient(180deg,rgba(8,9,13,.82),transparent);pointer-events:none}
+#hdr a,#hdr span{pointer-events:auto}
+#hdr .mark{color:var(--ink);text-decoration:none;font-weight:500}
+#hdr .mark b{color:var(--saffron);font-weight:500}
+#hdr .right{display:flex;gap:22px;align-items:center}
+#hdr .avail{display:flex;gap:8px;align-items:center;color:var(--ink-mid)}
+#hdr .avail i{width:6px;height:6px;border-radius:50%;background:var(--green);display:block;animation:blip 2.2s ease-in-out infinite}
+@keyframes blip{50%{opacity:.35}}
+@media(max-width:680px){#hdr .right #clock{display:none}}
+#grain{position:fixed;inset:0;z-index:96;pointer-events:none;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+.panel{margin-top:28px;max-width:440px;border:1px solid var(--line);border-radius:12px;background:rgba(10,12,18,.72);backdrop-filter:blur(6px);font-family:var(--mono);font-size:11px;color:var(--ink-mid);overflow:hidden}
+.panel .phead{display:flex;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink-dim);letter-spacing:.14em;text-transform:uppercase;font-size:10px}
+.panel .phead b{color:var(--saffron);font-weight:500}
+.panel .pbody{padding:12px 14px 14px}
+.prow{display:flex;align-items:center;gap:10px;padding:5px 0}
+.prow .k{min-width:96px;color:var(--ink-dim)}
+.prow .v{color:var(--ink);white-space:nowrap}
+.pbar{flex:1;height:3px;background:var(--line);border-radius:2px;position:relative;overflow:hidden}
+.pbar i{position:absolute;left:0;top:0;bottom:0;background:var(--saffron);border-radius:2px}
+.pflow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pflow .step{border:1px solid var(--line);border-radius:5px;padding:3px 8px;color:var(--ink-mid)}
+.pflow .arr{color:var(--ink-dim)}
+.pflow .gatestep{color:var(--saffron);border-color:rgba(238,138,59,.55)}
+.chips2{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.chip2{border:1px solid var(--line);border-radius:5px;padding:3px 8px;color:var(--ink-mid);font-size:10.5px}
+.pterm{line-height:1.9}
+.pterm .p{color:var(--green)}
+.pterm .c{color:var(--saffron)}
+.pterm .d{color:var(--ink-dim)}
+.pfoot{padding:8px 14px;border-top:1px dashed var(--line);color:var(--ink-dim);font-size:10px;letter-spacing:.04em}
+.locked{color:var(--ink-dim);border:1px solid var(--line);border-radius:5px;padding:3px 8px;letter-spacing:.12em}
+#bigfoot{overflow:hidden;padding:10vh 0 0}
+#bigfoot .word{font-weight:800;text-transform:uppercase;letter-spacing:-.03em;line-height:.82;font-size:clamp(60px,12.6vw,190px);color:transparent;-webkit-text-stroke:1px var(--line);text-align:center;white-space:nowrap;user-select:none}
+#bigfoot .word em{font-family:var(--serif);font-style:italic;font-weight:400;-webkit-text-stroke:0;color:var(--saffron);letter-spacing:0;text-transform:none}
+
+@media(prefers-reduced-motion:reduce){
+  #pre{transition:none}
+  .split .w span{transition:none;transform:none}
+  .fade{transition:none;opacity:1;transform:none}
+  #hdr .avail i{animation:none}
+}
+</style>
+</head>
+<body>
+
+<div id="pre" aria-hidden="true">
+  <div class="inner">
+    <div class="top"><span>Portfolio — 2026</span><span>Pune · IN</span></div>
+    <div class="name">Krishna<br>Vijayvargiya<br><em>applied ai engineer</em></div>
+    <div class="bottom">
+      <span class="top" style="position:static">Agents · Voice · MCP · On-device ML</span>
+      <span class="count" id="preCount">00</span>
+    </div>
+  </div>
+  <i class="bar" id="preBar"></i>
+</div>
+
+<div id="progressBar"></div>
+<header id="hdr">
+  <a class="mark" href="#hero">KV<b>©</b> Krishna Vijayvargiya</a>
+  <div class="right">
+    <span id="clock">PUNE — --:-- IST</span>
+    <span class="avail"><i></i>Open to roles</span>
+  </div>
+</header>
+<div id="grain" aria-hidden="true"></div>
+<div id="cDot"></div><div id="cRing"></div>
+<div id="stage"><canvas id="gl"></canvas></div>
+<div class="veil"></div>
+
+<nav id="rail" aria-label="Sections">
+  <a href="#hero"></a><a href="#voice"></a><a href="#copilot"></a><a href="#autapply"></a>
+  <a href="#gesture"></a><a href="#sarvam"></a><a href="#namaste"></a><a href="#contact"></a>
+</nav>
+
+<main class="content">
+
+  <!-- CH 0 — HERO · constellation -->
+  <section class="chapter" id="hero" data-chapter>
+    <div class="wrap" style="width:100%">
+      <div class="kicker fade">Applied AI — LLM Agents &amp; Systems</div>
+      <h1 class="split">Agents that do <em>real work.</em></h1>
+      <p class="lede fade">Autonomous agents, real-time multilingual voice, agent tooling and on-device ML — engineered end-to-end with human-in-the-loop safety gates and cost-aware model routing.</p>
+      <div class="hero-foot fade">
+        <div class="meta">
+          <span><b>06</b> featured builds</span>
+          <span><b>28</b> agent tools shipped</span>
+          <span><b>$0</b> API-spend test rigs</span>
+        </div>
+        <span class="cue">SCROLL — EVERY PROJECT HAS A FORM</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- morph corridor -->
+  <section id="statement">
+    <div class="wrap">
+      <p class="big split">I ship systems where the model is <em>never trusted blindly</em> — approval gates before send, deterministic work before tokens, cheap screens before strong confirms.</p>
+      <p class="sub fade">Recurring themes across every build: interface-driven architecture (real + fake adapters, so everything tests at zero cost), hybrid deterministic-plus-LLM pipelines, and building for Indian languages and data.</p>
+    </div>
+  </section>
+
+  <!-- CH 1 — HORIZON BANK · sphere -->
+  <section class="chapter" id="voice" data-chapter>
+    <div class="wrap" style="width:100%">
+      <div class="ch">
+        <div class="kicker fade">01 — Conversational AI · Real-time voice</div>
+        <h2 class="split">It speaks. <em>Interrupt it.</em></h2>
+        <p class="fade">Horizon Bank — a multilingual banking voice agent for Hindi, English and Hinglish. Browser mic to streaming STT, a hub-and-spoke system of five agents and fourteen tools, streaming TTS back — all over one WebSocket, with barge-in.</p>
+        <p class="note fade">The sphere breathing behind this text is the product's visual truth: streaming, interruptible, alive.</p>
+        <div class="fact fade"><span>STT <b>Sarvam Saaras</b></span><span>TTS <b>Bulbul · 24kHz gapless</b></span><span>RAG <b>FAISS</b></span><span>LLM <b>hot-swappable</b></span></div>
+        <span class="st working fade">● Working — full-stack</span>
+        <div class="panel fade">
+          <div class="phead"><span>Per-stage latency</span><b>streaming</b></div>
+          <div class="pbody">
+            <div class="prow"><span class="k">STT</span><span class="pbar"><i style="width:38%"></i></span><span class="v">~210ms</span></div>
+            <div class="prow"><span class="k">LLM 1st-token</span><span class="pbar"><i style="width:62%"></i></span><span class="v">~340ms</span></div>
+            <div class="prow"><span class="k">TTS</span><span class="pbar"><i style="width:33%"></i></span><span class="v">~180ms</span></div>
+            <div class="prow"><span class="k">Language</span><span class="v" style="margin-left:auto">re-detected every utterance</span></div>
+          </div>
+          <div class="pfoot">Illustrative readout — the live per-stage dashboard is a real feature of the product UI.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CH 2 — NETWORKING COPILOT · funnel + gate -->
+  <section class="chapter" id="copilot" data-chapter>
+    <div class="wrap" style="width:100%;display:flex">
+      <div class="ch right">
+        <div class="kicker fade">02 — Agents · Job-search automation</div>
+        <h2 class="split">Finds the people. <em>Waits for you.</em></h2>
+        <p class="fade">Networking Copilot — upload a résumé and it ranks best-fit companies, discovers real contacts from public search results, and drafts a tailored email per contact. Then it stops: a mandatory review-and-approve gate sits between draft and send.</p>
+        <p class="note fade">The funnel narrows from many companies to a few contacts — and everything pauses at the glowing gate. Nothing passes it without you.</p>
+        <div class="fact fade"><span>emails <b>confidence-labeled</b></span><span>send <b>your own mailbox</b></span><span>adapters <b>test at $0</b></span><span>CRM <b>full version history</b></span></div>
+        <span class="st working fade">● Working — single-user prototype</span>
+        <div class="panel fade">
+          <div class="phead"><span>Message state machine</span><b>gated</b></div>
+          <div class="pbody">
+            <div class="pflow">
+              <span class="step">draft</span><span class="arr">→</span>
+              <span class="step">edited</span><span class="arr">→</span>
+              <span class="step gatestep">you approve</span><span class="arr">→</span>
+              <span class="step">sent</span><span class="arr">→</span>
+              <span class="step">replied</span>
+            </div>
+            <div class="chips2" style="margin-top:12px">
+              <span class="chip2">found</span><span class="chip2">inferred</span><span class="chip2">role-inbox</span>
+              <span class="chip2">verified</span><span class="chip2">risky</span>
+            </div>
+          </div>
+          <div class="pfoot">Every discovered email carries a confidence score and type badge before you decide.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CH 3 — AUTAPPLY · form fill -->
+  <section class="chapter" id="autapply" data-chapter>
+    <div class="wrap" style="width:100%">
+      <div class="ch">
+        <div class="kicker fade">03 — Agents · Browser automation (MV3)</div>
+        <h2 class="split">Fills the form. <em>Never hits submit.</em></h2>
+        <p class="fade">autapply — an autonomous job-application agent that lives in your own Chrome. It discovers live-verified openings at top AI companies and fills Greenhouse, Lever, Ashby and Workday applications in background tabs while you browse.</p>
+        <p class="note fade">Watch the light sweep the fields — that's the fill loop. The submit control stays dark: the page is submit-locked until it hands the application back to you.</p>
+        <div class="fact fade"><span>answers <b>never invented</b></span><span>known fields <b>zero tokens</b></span><span>Claude <b>once per page</b></span><span>API cash spend <b>$0</b></span></div>
+        <span class="st working fade">● Working — actively developed</span>
+        <div class="panel fade">
+          <div class="phead"><span>Fill loop — per page</span><b>iterative</b></div>
+          <div class="pbody">
+            <div class="pflow">
+              <span class="step">extract page</span><span class="arr">→</span>
+              <span class="step">known fields · 0 tokens</span><span class="arr">→</span>
+              <span class="step">Claude plans rest · ×1</span><span class="arr">→</span>
+              <span class="step">deterministic fill</span>
+            </div>
+            <div class="prow" style="margin-top:12px;justify-content:space-between">
+              <span class="chips2"><span class="chip2">Greenhouse</span><span class="chip2">Lever</span><span class="chip2">Ashby</span><span class="chip2">Workday</span></span>
+              <span class="locked">SUBMIT · LOCKED</span>
+            </div>
+          </div>
+          <div class="pfoot">Unanswerable questions become flagged to-dos — an answer is never invented.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CH 4 — GESTURE · wave field -->
+  <section class="chapter" id="gesture" data-chapter>
+    <div class="wrap" style="width:100%;display:flex">
+      <div class="ch right">
+        <div class="kicker fade">04 — Computer vision · Accessibility</div>
+        <h2 class="split">Run Windows <em>with your hand.</em></h2>
+        <p class="fade">Gesture Accessibility Controller — webcam, MediaPipe, and a custom two-head neural model (~10k parameters, one ONNX graph) turn hand gestures into desktop control. Built accessibility-first for users with motor impairments; nothing fires until you engage.</p>
+        <p class="note fade">Move your cursor through the field — it reads your motion the way the temporal CNN reads a 16-frame swipe window.</p>
+        <div class="fact fade"><span>Static MLP <b>+ Temporal CNN</b></span><span>train/infer <b>parity</b></span><span>dwell-click <b>· dry-run mode</b></span></div>
+        <span class="st working fade">● Working — heuristic recognizer in daily use</span>
+        <div class="panel fade">
+          <div class="phead"><span>Model card — feat-v1</span><b>~10k params</b></div>
+          <div class="pbody">
+            <div class="prow"><span class="k">Schema</span><span class="v">12-dim per-frame · versioned</span></div>
+            <div class="prow"><span class="k">Static MLP</span><span class="v">none · open-palm · fist · point</span></div>
+            <div class="prow"><span class="k">Temporal CNN</span><span class="v">16-frame window · swipes ←→↑↓</span></div>
+            <div class="prow"><span class="k">Fusion</span><span class="v">deterministic 3-zone motion gate</span></div>
+            <div class="prow"><span class="k">Export</span><span class="v">one ONNX graph · train/infer parity</span></div>
+          </div>
+          <div class="pfoot">Trains headless on synthetic data — no webcam needed. Bias-to-no-fire by design.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CH 5 — SARVAM-CODE · chakra ring -->
+  <section class="chapter" id="sarvam" data-chapter>
+    <div class="wrap" style="width:100%">
+      <div class="ch">
+        <div class="kicker fade">05 — Developer tools · Agentic CLI</div>
+        <h2 class="split">A terminal with <em>an Indian soul.</em></h2>
+        <p class="fade">sarvam-code — an agentic coding CLI hardened for smaller Indian LLMs. A real plan → act → observe loop that reads, writes and edits files, searches your codebase, runs commands — and replies in Hindi, Tamil, Telugu or Bengali.</p>
+        <p class="note fade">The twenty-four-spoke ring is its identity — the Ashoka Chakra rendered as a tool loop that never stops turning.</p>
+        <div class="fact fade"><span>recovers <b>malformed tool calls</b></span><span>stitches <b>truncated replies</b></span><span>voice <b>F2 hold-free</b></span><span>modes <b>4 · Shift+Tab</b></span></div>
+        <span class="st packaged fade">● Packaged — v2.0.0, not yet on PyPI</span>
+        <div class="panel fade">
+          <div class="phead"><span>sarvam — REPL</span><b>plan → act → observe</b></div>
+          <div class="pbody pterm">
+            <div><span class="p">$</span> sarvam <span class="d">"explain this repo in Hindi"</span></div>
+            <div><span class="d">mode: plan · Shift+Tab to cycle · /cost</span></div>
+            <div><span class="c">↻ recovered truncated &lt;tool_call&gt; · repaired JSON args</span></div>
+            <div>नमस्ते! इस रिपो में…<span class="d"> ▌</span></div>
+          </div>
+          <div class="pfoot">Auto mode still confirms before destructive shell commands. Keys stay local, no telemetry.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CH 6 — NAMASTE-MCP · hub with 14 ports -->
+  <section class="chapter" id="namaste" data-chapter>
+    <div class="wrap" style="width:100%;display:flex">
+      <div class="ch right">
+        <div class="kicker fade">06 — AI infrastructure · MCP</div>
+        <h2 class="split">Fourteen tools. <em>One command.</em></h2>
+        <p class="fade">namaste-mcp — a Model Context Protocol server exposing Indian public data as native tools for Claude, Cursor and any MCP client: GSTIN validation, full GST invoice math, IFSC, PIN codes, mandi prices, railways, weather, FX.</p>
+        <p class="note fade">The column is the server; the fourteen nodes docked around it are its tools. Real offline computation — check-digit math, state-consistency fraud signals, an 8,990-station railway master — not just API proxying.</p>
+        <div class="fact fade"><span>install <b>uvx namaste-mcp</b></span><span>setup <b>zero</b></span><span>GSTIN decode <b>fully offline</b></span></div>
+        <span class="st packaged fade">● Packaged — runs in the owner's Claude setup; not yet published</span>
+        <div class="panel fade">
+          <div class="phead"><span>Tool surface</span><b>uvx namaste-mcp</b></div>
+          <div class="pbody">
+            <div class="chips2">
+              <span class="chip2">gst_invoice</span><span class="chip2">gstin_validate</span><span class="chip2">verify_entity</span>
+              <span class="chip2">ifsc</span><span class="chip2">pincode</span><span class="chip2">hsn_rates</span>
+              <span class="chip2">mandi_prices</span><span class="chip2">railway_stations</span><span class="chip2">weather</span>
+              <span class="chip2">fx_rates</span><span class="chip2">data.gov.in ×2</span><span class="chip2">+ more</span>
+            </div>
+            <div class="prow" style="margin-top:10px"><span class="k">Offline</span><span class="v">check-digit math · GST 2.0 tables · 8,990 stations bundled</span></div>
+          </div>
+          <div class="pfoot">verify_entity cross-checks GSTIN + IFSC + PIN for state consistency — a fraud signal search can't give you.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INDEX + CAPABILITIES (corridor to contact) -->
+  <section id="index">
+    <div class="wrap">
+      <div class="index-head">
+        <div>
+          <div class="kicker fade">Recap — Selected work</div>
+          <h2 class="split">The <em>index.</em></h2>
+        </div>
+        <div class="legend fade">
+          <i class="w">● Working</i> — complete &amp; runnable<br>
+          <i class="p">● Packaged</i> — built for release, not yet published
+        </div>
+      </div>
+      <a class="row fade" href="#voice"><span class="no">01</span><span class="ti">Horizon Bank Voice Agent</span><span class="cat">Voice · Multi-agent</span><span class="st working">Working</span></a>
+      <a class="row fade" href="#copilot"><span class="no">02</span><span class="ti">Networking Copilot</span><span class="cat">Agents · Full-stack</span><span class="st working">Working</span></a>
+      <a class="row fade" href="#autapply"><span class="no">03</span><span class="ti">autapply</span><span class="cat">Agents · Browser MV3</span><span class="st working">Working</span></a>
+      <a class="row fade" href="#gesture"><span class="no">04</span><span class="ti">Gesture Accessibility Controller</span><span class="cat">CV · Accessibility</span><span class="st working">Working</span></a>
+      <a class="row fade" href="#sarvam"><span class="no">05</span><span class="ti">sarvam-code</span><span class="cat">Dev tools · CLI</span><span class="st packaged">Packaged</span></a>
+      <a class="row fade" href="#namaste"><span class="no">06</span><span class="ti">namaste-mcp</span><span class="cat">AI infra · MCP</span><span class="st packaged">Packaged</span></a>
+
+      <div class="caps">
+        <div class="fade"><h3>Agents &amp; LLMs</h3><ul><li>Multi-agent orchestration</li><li>Tool calling · MCP servers</li><li>Agentic browser automation</li><li>Cost-tiered model routing</li></ul></div>
+        <div class="fade"><h3>Real-time voice</h3><ul><li>Streaming STT / TTS</li><li>VAD · barge-in</li><li>Sub-second latency budgets</li></ul></div>
+        <div class="fade"><h3>ML &amp; systems</h3><ul><li>PyTorch → ONNX on-device</li><li>Python asyncio · FastAPI</li><li>React 19 · Chrome MV3</li></ul></div>
+        <div class="fade"><h3>Models</h3><ul><li>Claude Haiku / Sonnet / Opus 4.8</li><li>Sarvam 105B / 30B</li><li>Groq Llama · local Qwen</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CH 7 — CONTACT · core -->
+  <section class="chapter" id="contact" data-chapter>
+    <div class="wrap">
+      <div class="ch">
+        <div class="kicker fade" style="justify-content:center">07 — Twenty-two thousand particles, one node: you</div>
+        <h2 class="split">Let's build agents <em>that ship.</em></h2>
+        <a class="magnet" id="magnet" href="mailto:23krishnavijay@gmail.com">23krishnavijay@gmail.com</a>
+        <div class="clinks fade">
+          <a href="https://github.com/devkrishna23" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://www.linkedin.com/in/krishna--vijayvargiya/" target="_blank" rel="noopener">LinkedIn</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="bigfoot" aria-hidden="true">
+    <div class="word">Krishna <em>ships.</em></div>
+  </div>
+
+  <footer>
+    <div class="wrap">
+      <span>© 2026 Krishna Vijayvargiya — direction demo · all claims from the brief</span>
+      <span>8 formations · GPU pair-morphing · DPR ≤ 2 · reduced-motion safe</span>
+    </div>
+  </footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+"use strict";
+var REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+var FINE=matchMedia('(pointer: fine)').matches;
+var MOBILE=innerWidth<820;
+
+/* ---------- PRELOADER ---------- */
+var pre=document.getElementById('pre'),preCount=document.getElementById('preCount'),preBar=document.getElementById('preBar');
+function runPre(done){
+  if(REDUCED){pre.classList.add('done');done();return;}
+  var p=0,t=setInterval(function(){
+    p+=4+Math.random()*9;
+    if(p>=100){p=100;clearInterval(t);setTimeout(function(){pre.classList.add('done');done();},380);}
+    preCount.textContent=(p<10?'0':'')+Math.floor(p);
+    preBar.style.width=p+'%';
+  },90);
+}
+
+/* ---------- CURSOR ---------- */
+if(FINE&&!REDUCED){
+  document.body.classList.add('has-cursor');
+  var dot=document.getElementById('cDot'),ringEl=document.getElementById('cRing');
+  var cx=innerWidth/2,cy=innerHeight/2,rx=cx,ry=cy;
+  addEventListener('pointermove',function(e){cx=e.clientX;cy=e.clientY;},{passive:true});
+  (function loop(){rx+=(cx-rx)*.15;ry+=(cy-ry)*.15;
+    dot.style.transform='translate('+cx+'px,'+cy+'px) translate(-50%,-50%)';
+    ringEl.style.transform='translate('+rx+'px,'+ry+'px) translate(-50%,-50%)';
+    requestAnimationFrame(loop);})();
+  document.querySelectorAll('a').forEach(function(el){
+    el.addEventListener('pointerenter',function(){ringEl.classList.add('hover');});
+    el.addEventListener('pointerleave',function(){ringEl.classList.remove('hover');});
+  });
+}else{
+  document.getElementById('cDot').style.display='none';
+  document.getElementById('cRing').style.display='none';
+}
+
+/* ---------- SPLIT TEXT ---------- */
+document.querySelectorAll('.split').forEach(function(el){
+  var frag=document.createDocumentFragment();
+  Array.prototype.slice.call(el.childNodes).forEach(function(n){
+    var isEl=n.nodeType===1,txt=n.textContent;
+    txt.split(/(\s+)/).forEach(function(tok){
+      if(!tok)return;
+      if(/^\s+$/.test(tok)){frag.appendChild(document.createTextNode(' '));return;}
+      var w=document.createElement('span');w.className='w';
+      var inner=document.createElement('span');
+      if(isEl){var e2=document.createElement('em');e2.textContent=tok;inner.appendChild(e2);}
+      else inner.textContent=tok;
+      w.appendChild(inner);frag.appendChild(w);
+    });
+  });
+  el.innerHTML='';el.appendChild(frag);
+  el.querySelectorAll('.w > span').forEach(function(s,i){s.style.transitionDelay=(i*40)+'ms';});
+});
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)e.target.classList.add('in');});},{threshold:.2});
+document.querySelectorAll('.split,.fade').forEach(function(el){io.observe(el);});
+document.querySelectorAll('section').forEach(function(sec){
+  sec.querySelectorAll('.fade').forEach(function(f,i){f.style.transitionDelay=(100+i*80)+'ms';});
+});
+
+/* ---------- MAGNETIC CTA ---------- */
+if(FINE&&!REDUCED){
+  var mag=document.getElementById('magnet');
+  addEventListener('pointermove',function(e){
+    var r=mag.getBoundingClientRect(),mx2=r.left+r.width/2,my2=r.top+r.height/2;
+    var dx=e.clientX-mx2,dy=e.clientY-my2,d=Math.hypot(dx,dy);
+    mag.style.transform=d<200?'translate('+dx*.16+'px,'+dy*.16+'px)':'none';
+  },{passive:true});
+}
+
+/* ---------- IST CLOCK + PROGRESS BAR ---------- */
+var clockEl=document.getElementById('clock');
+var fmtIST=new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',hour:'2-digit',minute:'2-digit',hour12:false});
+function tickClock(){clockEl.textContent='PUNE — '+fmtIST.format(new Date())+' IST';}
+tickClock();setInterval(tickClock,30000);
+var progEl=document.getElementById('progressBar');
+addEventListener('scroll',function(){
+  var h=document.documentElement.scrollHeight-innerHeight;
+  progEl.style.transform='scaleX('+(h>0?scrollY/h:0)+')';
+},{passive:true});
+
+/* ================================================================
+   THE FIELD — 22k particles · 8 formations · GPU pair-morphing
+   Only the two active formations live on the GPU; buffers hot-swap
+   at chapter boundaries (continuous at mix 1 → 0).
+   ================================================================ */
+if(!window.THREE){runPre(function(){});return;}
+
+var N=MOBILE?11000:22000;
+var DPR=Math.min(devicePixelRatio||1,2);
+var canvas=document.getElementById('gl');
+var renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:false,alpha:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(DPR);
+var scene=new THREE.Scene();
+var camera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,.1,120);
+camera.position.set(0,0,12.5);
+function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
+resize();addEventListener('resize',resize);
+
+var SAF=new THREE.Color(0xEE8A3B),BLU=new THREE.Color(0x5B8DEF),
+    SLA=new THREE.Color(0x2E3849),ICE=new THREE.Color(0x8FA5C8),
+    GRN=new THREE.Color(0x37B981),DRK=new THREE.Color(0x1A2231);
+
+function gauss(){return (Math.random()+Math.random()+Math.random()-1.5)/1.5;}
+function mk(){return {p:new Float32Array(N*3),c:new Float32Array(N*3)};}
+function put(F,i,x,y,z){F.p[i*3]=x;F.p[i*3+1]=y;F.p[i*3+2]=z;}
+function col(F,i,c){F.c[i*3]=c.r;F.c[i*3+1]=c.g;F.c[i*3+2]=c.b;}
+function dust(F,i){put(F,i,(Math.random()-.5)*24,(Math.random()-.5)*14,(Math.random()-.5)*10);col(F,i,DRK);}
+
+/* ---- F0 · HERO — agent constellation ---- */
+var F0=mk();
+(function(){
+  var spokes=[],R=4.4;
+  for(var s=0;s<6;s++){var a=s/6*Math.PI*2;
+    spokes.push(new THREE.Vector3(Math.cos(a)*R,Math.sin(a)*R*.55,Math.sin(a*1.7)*1.3));}
+  var tools=[];
+  spokes.forEach(function(sp){for(var j=0;j<3;j++){
+    var d=new THREE.Vector3(Math.random()-.5,Math.random()-.5,Math.random()-.5).normalize().multiplyScalar(1.15+Math.random()*1.25);
+    tools.push({f:sp,t:sp.clone().add(d)});}});
+  for(var i=0;i<N;i++){
+    var r=Math.random(),p=new THREE.Vector3(),c;
+    if(r<.12){p.set(gauss()*.42,gauss()*.42,gauss()*.42);c=SAF;}
+    else if(r<.32){var sp=spokes[(Math.random()*6)|0];p.copy(sp).add(new THREE.Vector3(gauss()*.2,gauss()*.2,gauss()*.2));c=ICE;}
+    else if(r<.58){var s2=spokes[(Math.random()*6)|0],t=Math.random();
+      p.copy(s2).multiplyScalar(t).add(new THREE.Vector3(gauss()*.045,gauss()*.045,gauss()*.045));
+      c=(Math.random()<.2)?BLU:SLA;}
+    else if(r<.74){var tl=tools[(Math.random()*tools.length)|0],tt=Math.random();
+      p.lerpVectors(tl.f,tl.t,tt);c=(tt>.9)?BLU:SLA;}
+    else{dust(F0,i);continue;}
+    put(F0,i,p.x,p.y,p.z);col(F0,i,c);
+  }
+})();
+
+/* ---- F1 · HORIZON BANK — voice sphere ---- */
+var F1=mk();
+(function(){
+  var R=2.6,GA=Math.PI*(3-Math.sqrt(5));
+  for(var i=0;i<N;i++){
+    var y=1-(i/(N-1))*2,rad=Math.sqrt(Math.max(0,1-y*y)),th=GA*i;
+    put(F1,i,Math.cos(th)*rad*R,y*R,Math.sin(th)*rad*R);
+    col(F1,i,ICE.clone().lerp(BLU,Math.random()*.5).lerp(SAF,Math.pow(Math.abs(y),3)*.55));
+  }
+})();
+
+/* ---- F2 · NETWORKING COPILOT — funnel + approval gate ----
+   wide intake of companies → narrowing ranks → saffron gate ring → send beam */
+var F2=mk();
+(function(){
+  for(var i=0;i<N;i++){
+    var r=Math.random(),c;
+    if(r<.52){ /* funnel wall: y 2.3 → gate at -0.7 */
+      var t=Math.pow(Math.random(),.8),y=2.3-t*3.0;
+      var rad=.38+(1-t)*2.55+gauss()*.06,a=Math.random()*Math.PI*2;
+      put(F2,i,Math.cos(a)*rad,y,Math.sin(a)*rad*.9);
+      c=SLA.clone().lerp(ICE,Math.pow(t,1.6)*.7);
+      if(Math.random()<.06)c=BLU.clone().lerp(SLA,.3); /* candidate packets */
+    }else if(r<.64){ /* the approval gate ring */
+      var a2=Math.random()*Math.PI*2,tt=Math.random()*Math.PI*2,GR=.52,tube=.055;
+      put(F2,i,Math.cos(a2)*(GR+Math.cos(tt)*tube),-0.7+Math.sin(tt)*tube,Math.sin(a2)*(GR+Math.cos(tt)*tube));
+      c=SAF;
+    }else if(r<.8){ /* approved send-beam below the gate */
+      var yb=-0.85-Math.random()*1.9;
+      put(F2,i,gauss()*.09,yb,gauss()*.09);
+      c=SAF.clone().lerp(BLU,Math.random()*.45);
+    }else{dust(F2,i);continue;}
+    col(F2,i,c);
+  }
+})();
+
+/* ---- F3 · AUTAPPLY — the form page ----
+   frame + six field rows + a locked submit control that stays dark */
+var F3=mk();
+(function(){
+  var W=2.35,H=1.7;
+  for(var i=0;i<N;i++){
+    var r=Math.random(),c;
+    if(r<.13){ /* page frame */
+      var x,y,seg=Math.random()*4|0;
+      if(seg===0){x=-W+Math.random()*2*W;y=H;}
+      else if(seg===1){x=-W+Math.random()*2*W;y=-H;}
+      else if(seg===2){x=-W;y=-H+Math.random()*2*H;}
+      else{x=W;y=-H+Math.random()*2*H;}
+      put(F3,i,x+gauss()*.012,y+gauss()*.012,gauss()*.03);
+      c=SLA.clone().lerp(ICE,.25);
+    }else if(r<.62){ /* six field rows: short label + long input line */
+      var row=Math.random()*6|0,y2=1.25-row*.5;
+      var isLabel=Math.random()<.22,x2;
+      if(isLabel)x2=-W+.15+Math.random()*.55;
+      else x2=-W+.9+Math.random()*(2*W-1.15);
+      put(F3,i,x2,y2+gauss()*.015,gauss()*.03);
+      c=isLabel?ICE.clone().lerp(SLA,.3):SLA.clone().lerp(DRK,Math.random()*.4);
+    }else if(r<.7){ /* locked submit control, bottom-right — deliberately dark */
+      var a3=Math.random()*Math.PI*2,sr=.16+gauss()*.02;
+      put(F3,i,W-.55+Math.cos(a3)*sr,-H+.32+Math.sin(a3)*sr*.6,gauss()*.02);
+      c=DRK.clone().lerp(SAF,.14); /* it never lights up */
+    }else{dust(F3,i);continue;}
+    col(F3,i,c);
+  }
+})();
+
+/* ---- F4 · GESTURE — interactive wave field ---- */
+var F4=mk();
+var FIELD_Y=-1.35;
+(function(){
+  var COLS=170,W=13.5,D=7.5,ROWS=Math.ceil(N/COLS);
+  for(var i=0;i<N;i++){
+    var cI=i%COLS,rI=(i/COLS)|0;
+    put(F4,i,(cI/(COLS-1)-.5)*W,FIELD_Y,(rI/(ROWS-1)-.5)*D);
+    var edge=Math.abs(cI/(COLS-1)-.5)*2;
+    col(F4,i,SLA.clone().lerp(DRK,Math.random()*.5).lerp(SAF,Math.pow(edge,6)*.35));
+  }
+})();
+
+/* ---- F5 · SARVAM-CODE — 24-spoke chakra ring ---- */
+var F5=mk();
+(function(){
+  for(var i=0;i<N;i++){
+    var c,r=Math.random();
+    if(r<.6){
+      var a=Math.random()*Math.PI*2,b=Math.random()*Math.PI*2,R=2.9,t=.15;
+      put(F5,i,(R+Math.cos(b)*t)*Math.cos(a),(R+Math.cos(b)*t)*Math.sin(a),Math.sin(b)*t);
+      c=(a<Math.PI*2/3?SAF:a<Math.PI*4/3?ICE:GRN).clone().lerp(SLA,.45);
+    }else if(r<.9){
+      var sp=((Math.random()*24)|0)/24*Math.PI*2,rr=Math.pow(Math.random(),.7)*2.75;
+      put(F5,i,Math.cos(sp)*rr,Math.sin(sp)*rr,gauss()*.03);
+      c=BLU.clone().lerp(DRK,.55);
+    }else{dust(F5,i);continue;}
+    col(F5,i,c);
+  }
+})();
+
+/* ---- F6 · NAMASTE-MCP — server column + 14 docked tool nodes ---- */
+var F6=mk();
+(function(){
+  var ports=[];
+  for(var k=0;k<14;k++){
+    var a=k/14*Math.PI*2;
+    ports.push(new THREE.Vector3(Math.cos(a)*2.7,Math.sin(a)*1.55,Math.sin(a*2.3)*.5));
+  }
+  for(var i=0;i<N;i++){
+    var r=Math.random(),c;
+    if(r<.3){ /* central server column */
+      var a2=Math.random()*Math.PI*2,rad=.42+gauss()*.03,y=(Math.random()-.5)*3;
+      put(F6,i,Math.cos(a2)*rad,y,Math.sin(a2)*rad);
+      c=ICE.clone().lerp(SLA,.4+Math.random()*.3);
+      if(Math.abs((y*4)%1)<.06)c=BLU.clone().lerp(SLA,.2); /* data bands */
+    }else if(r<.5){ /* 14 tool nodes */
+      var pt=ports[(Math.random()*14)|0];
+      put(F6,i,pt.x+gauss()*.13,pt.y+gauss()*.13,pt.z+gauss()*.13);
+      c=(Math.random()<.5?SAF:GRN).clone().lerp(ICE,Math.random()*.35);
+    }else if(r<.76){ /* connectors: column surface → port */
+      var pt2=ports[(Math.random()*14)|0],t2=Math.random();
+      var sx=pt2.clone().normalize().multiplyScalar(.45);sx.y=pt2.y*.25;
+      var pp=sx.lerp(pt2,t2);
+      put(F6,i,pp.x+gauss()*.02,pp.y+gauss()*.02,pp.z+gauss()*.02);
+      c=(Math.random()<.18)?BLU:SLA.clone().lerp(DRK,.3);
+    }else{dust(F6,i);continue;}
+    col(F6,i,c);
+  }
+})();
+
+/* ---- F7 · CONTACT — the core ---- */
+var F7=mk();
+(function(){
+  for(var i=0;i<N;i++){
+    if(Math.random()<.78){
+      var v=new THREE.Vector3(gauss(),gauss(),gauss()).normalize().multiplyScalar(.5+Math.pow(Math.random(),1.6)*.85);
+      put(F7,i,v.x,v.y,v.z);col(F7,i,SAF.clone().lerp(ICE,Math.random()*.55));
+    }else{
+      var a=Math.random()*Math.PI*2,R2=2.5+gauss()*.1;
+      put(F7,i,Math.cos(a)*R2,Math.sin(a)*R2*.32,Math.sin(a*2)*.4);
+      col(F7,i,BLU.clone().lerp(DRK,.4));
+    }
+  }
+})();
+
+var FORMS=[F0,F1,F2,F3,F4,F5,F6,F7];
+
+/* seeds + paired buffers */
+var seeds=new Float32Array(N);
+for(var i2=0;i2<N;i2++)seeds[i2]=Math.random();
+var bFrom=new Float32Array(F0.p),bTo=new Float32Array(F1.p),
+    cFromA=new Float32Array(F0.c),cToA=new Float32Array(F1.c);
+
+var geo=new THREE.BufferGeometry();
+geo.setAttribute('position',new THREE.BufferAttribute(bFrom,3));
+geo.setAttribute('aTo',new THREE.BufferAttribute(bTo,3));
+geo.setAttribute('aCFrom',new THREE.BufferAttribute(cFromA,3));
+geo.setAttribute('aCTo',new THREE.BufferAttribute(cToA,3));
+geo.setAttribute('aSeed',new THREE.BufferAttribute(seeds,1));
+
+var uniforms={
+  uMix:{value:0},
+  uFromId:{value:0},
+  uToId:{value:1},
+  uTime:{value:0},
+  uEnv:{value:0},
+  uMouse:{value:new THREE.Vector3(999,999,0)},
+  uForce:{value:.5},
+  uSize:{value:(MOBILE?2.2:2.8)*DPR},
+  uSpin:{value:0}
+};
+
+var vert=[
+"attribute vec3 aTo; attribute vec3 aCFrom; attribute vec3 aCTo; attribute float aSeed;",
+"uniform float uMix; uniform float uFromId; uniform float uToId;",
+"uniform float uTime; uniform float uEnv; uniform vec3 uMouse;",
+"uniform float uForce; uniform float uSize; uniform float uSpin;",
+"varying vec3 vColor; varying float vAlpha;",
+"float wOf(float id){",
+"  float w = 0.0;",
+"  if(abs(uFromId - id) < 0.5) w += 1.0 - uMix;",
+"  if(abs(uToId   - id) < 0.5) w += uMix;",
+"  return w;",
+"}",
+"void main(){",
+"  vec3 p = mix(position, aTo, uMix);",
+"  vec3 c = mix(aCFrom, aCTo, uMix);",
+"  /* F1 · sphere — syllable pulse along the radial normal */",
+"  float w1 = wOf(1.0);",
+"  if(w1 > 0.001){",
+"    float pulse = (0.05 + 0.16*uEnv) * sin(uTime*6.0 + aSeed*40.0);",
+"    p += normalize(p + vec3(0.0001)) * pulse * w1;",
+"    c = mix(c, vec3(0.933,0.541,0.231), uEnv*w1*0.45);",
+"  }",
+"  /* F2 · funnel — slow swirl, gate glow, beam shimmer */",
+"  float w2 = wOf(2.0);",
+"  if(w2 > 0.001){",
+"    float a2 = uTime*0.22;",
+"    mat2 R2 = mat2(cos(a2),-sin(a2),sin(a2),cos(a2));",
+"    p.xz = mix(p.xz, R2*p.xz, w2);",
+"    float gate = smoothstep(0.28, 0.0, abs(p.y + 0.7)) * w2;",
+"    c += vec3(0.933,0.541,0.231) * gate * (0.25 + 0.25*sin(uTime*3.0));",
+"    if(p.y < -0.8) c += vec3(0.2,0.3,0.6) * w2 * 0.25 * (0.5+0.5*sin(uTime*4.0 - p.y*6.0 + aSeed*20.0));",
+"  }",
+"  /* F3 · form page — fill sweep left to right */",
+"  float w3 = wOf(3.0);",
+"  if(w3 > 0.001){",
+"    float sweepX = mix(-2.35, 2.35, fract(uTime*0.16));",
+"    float hi = smoothstep(0.55, 0.0, abs(p.x - sweepX)) * step(abs(p.y), 1.55) * w3;",
+"    c += vec3(0.933,0.541,0.231) * hi * 0.6;",
+"  }",
+"  /* F4 · gesture field — travelling wave */",
+"  float w4 = wOf(4.0);",
+"  if(w4 > 0.001){",
+"    p.y += sin(p.x*0.85 + uTime*1.6) * cos(p.z*1.15 - uTime*1.15) * 0.36 * w4;",
+"  }",
+"  /* F5 · chakra — the ring turns */",
+"  float w5 = wOf(5.0);",
+"  if(w5 > 0.001){",
+"    mat2 R5 = mat2(cos(uSpin),-sin(uSpin),sin(uSpin),cos(uSpin));",
+"    p.xy = mix(p.xy, R5*p.xy, w5);",
+"  }",
+"  /* F6 · MCP hub — slow orbit + packet blink on connectors */",
+"  float w6 = wOf(6.0);",
+"  if(w6 > 0.001){",
+"    float a6 = uTime*0.12;",
+"    mat2 R6 = mat2(cos(a6),-sin(a6),sin(a6),cos(a6));",
+"    p.xz = mix(p.xz, R6*p.xz, w6);",
+"    c += vec3(0.15,0.25,0.55) * w6 * 0.3 * max(0.0, sin(uTime*3.0 + aSeed*30.0));",
+"  }",
+"  /* F7 · core — breathing */",
+"  float w7 = wOf(7.0);",
+"  if(w7 > 0.001) p *= 1.0 + 0.035*sin(uTime*1.3)*w7;",
+"  /* ambient drift */",
+"  p += vec3(",
+"    sin(p.y*1.6 + uTime*0.7 + aSeed*6.28),",
+"    sin(p.z*1.4 + uTime*0.6 + aSeed*3.14),",
+"    sin(p.x*1.8 + uTime*0.8 + aSeed*1.57)",
+"  ) * 0.03;",
+"  /* mouse force field */",
+"  vec3 d = p - uMouse;",
+"  float dist = length(d);",
+"  float f = smoothstep(2.4, 0.0, dist) * uForce;",
+"  p += (d / max(dist, 0.001)) * f;",
+"  c = mix(c, vec3(0.933,0.541,0.231), f*0.55);",
+"  vColor = c;",
+"  vec4 mv = modelViewMatrix * vec4(p, 1.0);",
+"  float sz = uSize * (0.55 + 0.9*fract(aSeed*7.31));",
+"  gl_PointSize = sz * (14.0 / -mv.z);",
+"  vAlpha = smoothstep(34.0, 7.0, -mv.z);",
+"  gl_Position = projectionMatrix * mv;",
+"}"
+].join("\n");
+
+var fragS=[
+"varying vec3 vColor; varying float vAlpha;",
+"void main(){",
+"  vec2 uv = gl_PointCoord - 0.5;",
+"  float d = length(uv);",
+"  float a = smoothstep(0.5, 0.04, d);",
+"  a *= a;",
+"  gl_FragColor = vec4(vColor, a * vAlpha * 0.95);",
+"}"
+].join("\n");
+
+var mat=new THREE.ShaderMaterial({
+  vertexShader:vert,fragmentShader:fragS,uniforms:uniforms,
+  transparent:true,depthWrite:false,blending:THREE.AdditiveBlending
+});
+scene.add(new THREE.Points(geo,mat));
+
+/* constellation edges — F0 only */
+var lineMat=new THREE.LineBasicMaterial({color:0x1D2635,transparent:true,opacity:.85});
+var lg=new THREE.BufferGeometry(),lv=[];
+for(var s3=0;s3<6;s3++){var a4=s3/6*Math.PI*2;
+  lv.push(0,0,0,Math.cos(a4)*4.4,Math.sin(a4)*4.4*.55,Math.sin(a4*1.7)*1.3);}
+lg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(lv),3));
+var lines=new THREE.LineSegments(lg,lineMat);scene.add(lines);
+
+/* ---------- pair management ---------- */
+var pairA=0;
+function loadPair(a){
+  pairA=a;
+  bFrom.set(FORMS[a].p);   geo.attributes.position.needsUpdate=true;
+  bTo.set(FORMS[a+1].p);   geo.attributes.aTo.needsUpdate=true;
+  cFromA.set(FORMS[a].c);  geo.attributes.aCFrom.needsUpdate=true;
+  cToA.set(FORMS[a+1].c);  geo.attributes.aCTo.needsUpdate=true;
+  uniforms.uFromId.value=a;uniforms.uToId.value=a+1;
+}
+
+/* ---------- scroll → chapter float ---------- */
+var chapters=Array.prototype.slice.call(document.querySelectorAll('[data-chapter]'));
+function chFloat(){
+  var mid=scrollY+innerHeight*.5;
+  var mids=chapters.map(function(c){return c.offsetTop+c.offsetHeight*.5;});
+  if(mid<=mids[0])return 0;
+  if(mid>=mids[mids.length-1])return mids.length-1;
+  for(var i=0;i<mids.length-1;i++)
+    if(mid>=mids[i]&&mid<mids[i+1])return i+(mid-mids[i])/(mids[i+1]-mids[i]);
+  return 0;
+}
+var cS=0;
+var railLinks=document.querySelectorAll('#rail a');
+
+/* camera keys — one per chapter */
+var CAMS=[
+  [0,0,12.5],   /* constellation */
+  [0,.3,6.6],   /* sphere */
+  [0,.4,7.8],   /* funnel */
+  [0,0,6.4],    /* form page */
+  [0,3.6,7.6],  /* wave field */
+  [0,0,7.2],    /* chakra */
+  [0,.5,8.0],   /* mcp hub */
+  [0,0,5.6]     /* core */
+];
+
+/* mouse → world */
+var ndc=new THREE.Vector2(10,10),ray=new THREE.Raycaster(),
+    planeZ=new THREE.Plane(new THREE.Vector3(0,0,1),0),
+    planeY=new THREE.Plane(new THREE.Vector3(0,1,0),-FIELD_Y),
+    hit=new THREE.Vector3(),mxs=0,mys=0;
+addEventListener('pointermove',function(e){
+  ndc.x=e.clientX/innerWidth*2-1;ndc.y=-(e.clientY/innerHeight)*2+1;
+  mxs=ndc.x*.5;mys=ndc.y*.5;
+},{passive:true});
+
+var clock=new THREE.Clock(),hidden=false;
+document.addEventListener('visibilitychange',function(){hidden=document.hidden;});
+
+function jsWOf(id){
+  var w=0,m=uniforms.uMix.value;
+  if(pairA===id)w+=1-m;
+  if(pairA+1===id)w+=m;
+  return w;
+}
+
+function frame(){
+  clock.getDelta();
+  if(!hidden){
+    var t=clock.elapsedTime;
+    var c=chFloat();cS+=(c-cS)*.065;
+    var idx=Math.round(cS);
+    railLinks.forEach(function(a,i){a.classList.toggle('on',i===idx);});
+
+    var a=Math.max(0,Math.min(FORMS.length-2,Math.floor(cS)));
+    if(a!==pairA)loadPair(a);
+    var f=Math.max(0,Math.min(1,cS-a));
+    uniforms.uMix.value=f*f*(3-2*f);
+
+    uniforms.uTime.value=t;
+    uniforms.uSpin.value=t*.3;
+    uniforms.uEnv.value=Math.abs(Math.sin(t*2.7)*Math.sin(t*1.15))*.85+.12;
+
+    var w0=jsWOf(0),w4=jsWOf(4);
+    uniforms.uForce.value=.45+w4*.85;
+
+    ray.setFromCamera(ndc,camera);
+    if(ray.ray.intersectPlane(w4>.5?planeY:planeZ,hit))uniforms.uMouse.value.copy(hit);
+
+    lineMat.opacity=w0*.85;lines.visible=w0>.02;
+    lines.rotation.y=(1-w4)*t*.045;
+
+    var ci=Math.max(0,Math.min(CAMS.length-1,cS)),ca=Math.floor(ci),cf=ci-ca,
+        K1=CAMS[ca],K2=CAMS[Math.min(ca+1,CAMS.length-1)];
+    camera.position.x+=((K1[0]+(K2[0]-K1[0])*cf)+mxs*1.2-camera.position.x)*.05;
+    camera.position.y+=((K1[1]+(K2[1]-K1[1])*cf)+mys*.8-camera.position.y)*.05;
+    camera.position.z+=((K1[2]+(K2[2]-K1[2])*cf)-camera.position.z)*.05;
+    camera.lookAt(0,0,0);
+
+    renderer.render(scene,camera);
+  }
+  if(!REDUCED)requestAnimationFrame(frame);
+}
+
+runPre(function(){
+  if(REDUCED)renderer.render(scene,camera);
+  else requestAnimationFrame(frame);
+});
+if(REDUCED){pre.classList.add('done');renderer.render(scene,camera);}
+
+})();
+</script>
+</body>
+</html>
